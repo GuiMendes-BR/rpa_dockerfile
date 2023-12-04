@@ -1,0 +1,89 @@
+FROM ubuntu:latest
+
+
+#=======================================
+# Install Python and Basic Python Tools
+#=======================================
+RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update
+RUN apt-get install -y python3 python3-pip python3-setuptools python3-dev python-distribute
+RUN alias python=python3
+RUN echo "alias python=python3" >> ~/.bashrc
+
+#=================================
+# Install Bash Command Line Tools
+#=================================
+RUN apt-get -qy --no-install-recommends install \
+    sudo \
+    unzip \
+    wget \
+    curl \
+    libxi6 \
+    libgconf-2-4 \
+    vim \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN sudo apt-get update
+
+#===========================
+# Configure Virtual Display
+#===========================
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+EXPOSE 5900 6099
+ENV \
+  DEBIAN_FRONTEND="nonintractive" \
+  X11VNC_PASSWORD="password"
+
+RUN apt-get install -y xvfb x11vnc fluxbox
+
+#=======================
+# Update Python Version
+#=======================
+RUN apt-get update -y
+RUN apt-get -qy --no-install-recommends install python3.10
+RUN rm /usr/bin/python3
+RUN ln -s python3.10 /usr/bin/python3
+
+#=============================================
+# Allow Special Characters in Python Programs
+#=============================================
+RUN export PYTHONIOENCODING=utf8
+RUN echo "export PYTHONIOENCODING=utf8" >> ~/.bashrc
+
+#=======================
+# Install Google Chrome
+#=======================
+# RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+#     && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+
+# RUN apt-get update && apt-get -y install google-chrome-stable
+RUN apt -f install -y
+RUN apt-get install -y wget
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN apt-get install ./google-chrome-stable_current_amd64.deb -y
+
+# Add a user for running applications.
+# RUN useradd apps
+# RUN mkdir -p /home/apps && chown apps:apps /home/apps
+
+RUN export DISPLAY=$HOST_IP:99
+
+RUN sudo groupadd docker
+RUN adduser bot
+RUN sudo usermod -aG docker bot
+RUN mkdir /code
+RUN sudo chown -R bot /code
+# RUN sudo chown -R bot /usr
+RUN sudo chown -R bot /home
+# RUN apt-get install acl 
+# RUN sudo setfacl -R -m u:bot:rwx /code
+RUN sudo chmod -R 777 /code
+USER bot
+
+
+ADD ./entrypoint.sh /opt/entrypoint.sh
+ENTRYPOINT /opt/entrypoint.sh
+
+
+# docker run -dit --name fluxbox_container -p 5900:5900 --shm-size=1g --privileged fluxbox

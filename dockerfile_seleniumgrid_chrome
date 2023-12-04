@@ -1,0 +1,49 @@
+# SeleniumBase Docker Image
+FROM selenium/node-chrome:latest
+
+#=======================================
+# Install Python and Basic Python Tools
+#=======================================
+
+# RUN apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update
+# RUN apt-get install -y python3 python3-pip python3-setuptools python3-dev python-distribute
+# RUN alias python=python3
+# RUN echo "alias python=python3" >> ~/.bashrc
+
+# #=================================
+# # Install Bash Command Line Tools
+# #=================================
+# RUN apt-get -qy --no-install-recommends install \
+#     sudo \
+#     unzip \
+#     wget \
+#     curl \
+#     libxi6 \
+#     libgconf-2-4 \
+#     vim \
+#     xvfb \
+#   && rm -rf /var/lib/apt/lists/*
+
+#=======================
+# Update Python Version
+#=======================
+RUN sudo apt-get update -y
+RUN sudo apt-get install python3.10 -y
+RUN sudo apt update
+RUN sudo apt-get install software-properties-common -y
+RUN sudo apt-get install python3-pip -y
+RUN sudo pip install --upgrade pip
+# RUN rm /usr/bin/python3
+# RUN ln -s python3.10 /usr/bin/python3
+
+#=============================================
+# Allow Special Characters in Python Programs
+#=============================================
+RUN export PYTHONIOENCODING=utf8
+RUN echo "export PYTHONIOENCODING=utf8" >> ~/.bashrc
+
+# ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/bin/bash"]
+
+
+# docker run -dit --net grid -e SE_EVENT_BUS_HOST=selenium-hub --shm-size="2g" -e SE_EVENT_BUS_PUBLISH_PORT=4442 -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 selenium/node-chrome
