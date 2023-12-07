@@ -79,11 +79,16 @@ RUN sudo chown -R bot /home
 # RUN apt-get install acl 
 # RUN sudo setfacl -R -m u:bot:rwx /code
 RUN sudo chmod -R 777 /code
+
+ENV DISPLAY=:99
+
 USER bot
 
 
 ADD ./entrypoint.sh /opt/entrypoint.sh
-ENTRYPOINT /opt/entrypoint.sh
+ENTRYPOINT ["/opt/entrypoint.sh"]
 
 
 # docker run -dit --name fluxbox_container -p 5900:5900 --shm-size=1g --privileged fluxbox
+
+# docker build -t bot-runner -f dockerfile_bot_runner .
